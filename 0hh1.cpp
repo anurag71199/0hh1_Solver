@@ -5,9 +5,26 @@ using namespace std;
 #define red "\033[1;31m*\033[0m ";
 #define blue "\033[1;34m*\033[0m ";
 
+void board_status(vector<vector<int>>&board){
+    for(int i=0;i<board.size();i++){
+        for(int j=0;j<board.size();j++){
+            if(board[i][j] == 1){
+                cout<<blue;
+            }
+            else if(board[i][j] == 2){
+                cout<<red;
+            }
+            else
+                cout<<board[i][j]<<" ";
+        }
+        cout<<"\n";
+    }
+}
+
 bool check(int i, int j, int color, int n, vector<vector<int>>&board){
     //return true on violation
 
+    // cout<<"checking\n";
     //consecutive row check
     if(j==0){
         if(board[i][j+1] == color && board[i][j+2] == color){
@@ -28,6 +45,8 @@ bool check(int i, int j, int color, int n, vector<vector<int>>&board){
     else if(j<n-2 && board[i][j+1] == color && board[i][j+2] == color){
         return true;
     }
+
+    // cout<<"passed j check\n";
 
 
     //consecutive column check
@@ -50,6 +69,7 @@ bool check(int i, int j, int color, int n, vector<vector<int>>&board){
     else if(i<n-2 && board[i+1][j] == color && board[i+2][j] == color){
         return true;
     }
+    // cout<<"passed i check\n";
     
     //number of colors in row check
     int count = 0;
@@ -62,6 +82,8 @@ bool check(int i, int j, int color, int n, vector<vector<int>>&board){
         }
     }
 
+    // cout<<"passed color in row check\n";
+
     //number of colors in column check
     count = 0;
     for(int x=0;x<n;x++){
@@ -73,14 +95,26 @@ bool check(int i, int j, int color, int n, vector<vector<int>>&board){
         }
     }
 
+    // cout<<"passed color in col check\n";
 
     //Two rows identical check
     set<vector<int>>s;
     vector<int>identical;
     for(int i=0;i<n;i++){
+        bool non_zero_flag = 0;
+
         for(int j=0;j<n;j++){
+            if(board[i][j] == 0){
+                non_zero_flag = 1;
+                break;
+            }
             identical.push_back(board[i][j]);
         }
+
+        if(non_zero_flag == 1){
+            continue;
+        }
+
         if(s.find(identical) != s.end()){
             return true;
         }
@@ -88,22 +122,36 @@ bool check(int i, int j, int color, int n, vector<vector<int>>&board){
         identical.clear();
     }
     
+    // cout<<"passed two row identical check\n";
     
     //Two columns identical check
     s.clear();
     identical.clear();
     for(int j=0;j<n;j++){
+        bool non_zero_flag = 0;
+
         for(int i=0;i<n;i++){
+            if(board[i][j] == 0){
+                non_zero_flag = 1;
+                break;
+            }
             identical.push_back(board[i][j]);
         }
+        if(non_zero_flag == 1){
+            continue;
+        }
+
         if(s.find(identical) != s.end()){
             return true;
         }
         s.insert(identical);
         identical.clear();
     }
+
+    // cout<<"passed two col identical check\n";
     
     //Cell has no violation
+    // board_status(board);
     return false;
 }
 
@@ -113,9 +161,9 @@ bool solve(int i, int j, int n, vector<vector<int>>&board){
 
     //Fill blue
     board[i][j] = 1;
+    // board_status(board);
     if(check(i,j,1,n,board) == false){
         int xi,xj;
-        
         for(xi=0;xi<n;xi++){
             for(xj=0;xj<n;xj++){
                 if(board[xi][xj] == 0){
@@ -134,15 +182,17 @@ bool solve(int i, int j, int n, vector<vector<int>>&board){
     }
     
     checkpoint1:
-
+	
+    complete_flag = 1;
     //Fill red
     board[i][j] = 2;
+    // board_status(board);
     if(check(i,j,2,n,board) == false){
         int xi,xj;
         for(xi=0;xi<n;xi++){
             for(xj=0;xj<n;xj++){
                 if(board[xi][xj] == 0){
-                    complete_flag = 1;
+                    complete_flag = 0;
                     if(solve(xi,xj,n,board) == true){
                         return true;
                     }
@@ -205,10 +255,12 @@ int main(){
         for(int j=0;j<n;j++){
             if(board[i][j] == 0){
                 solve(i,j,n,board);
-                break;
+                goto checkpoint3;
             }
         }
     }
+
+    checkpoint3:
 
     //Print the solution board
     cout<<"Solved board : "<<endl;
@@ -229,9 +281,22 @@ int main(){
     return 0;
 }
 
+// example 4
 /*
 1 0 1 0
 0 0 0 2
 0 0 1 0
 0 0 0 0
+*/
+
+//example 8
+/*
+0 0 0 1 0 1 0 0
+2 0 2 0 0 1 0 0
+0 0 0 2 0 0 0 0
+1 0 0 0 0 0 0 0
+0 2 0 0 0 2 2 0
+0 0 1 1 0 0 0 0
+0 0 0 0 0 0 0 0
+0 0 2 0 0 0 1 0
 */
